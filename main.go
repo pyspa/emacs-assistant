@@ -4,32 +4,47 @@ package main
 import "C"
 
 import (
-	"log"
+	"libpyspaemacs/speech"
+	"strings"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/sigma/go-emacs"
+	"github.com/spf13/viper"
 )
 
 func init() {
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
+	viper.AutomaticEnv()
+	initLogger()
 	emacs.Register(initModule)
 }
 
 func initModule(env emacs.Environment) {
-	stdlib := env.StdLib()
-	helloFunc := env.MakeFunction(hello, 1, "echo", nil)
-	helloSym := stdlib.Intern("pyspa/echo")
-	stdlib.Fset(helloSym, helloFunc)
-	pyspaSym := stdlib.Intern("pyspa")
-	stdlib.Provide(pyspaSym)
+	log.Debug().Msg("initializing ...")
+	// echo
+	env.RegisterFunction("pyspa/echo", echo, 1, "doc", nil)
+	// speech
+	env.RegisterFunction("pyspa/speech", speech.Speech, 1, "doc", nil)
+
+	env.ProvideFeature("pyspa")
 }
 
-func hello(ctx emacs.FunctionCallContext) (emacs.Value, error) {
+func echo(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	stdlib := ctx.Environment().StdLib()
-	path, err := ctx.GoStringArg(0)
+	msg, err := ctx.GoStringArg(0)
 	if err != nil {
 		return stdlib.Nil(), err
 	}
-	log.Println(path)
+	log.Info().Msg(msg)
 	return stdlib.Nil(), nil
+}
+
+func initLogger() {
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if true {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
 }
 
 func main() {
