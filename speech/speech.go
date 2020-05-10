@@ -5,12 +5,13 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
+	"github.com/mopemope/emacs-module-go"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
-	"github.com/sigma/go-emacs"
 	"github.com/spf13/viper"
 	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
 )
@@ -19,18 +20,30 @@ var mutex sync.Mutex
 
 func Speech(ectx emacs.FunctionCallContext) (emacs.Value, error) {
 	stdlib := ectx.Environment().StdLib()
+
 	text, err := ectx.GoStringArg(0)
 	if err != nil {
-		return stdlib.Nil(), err
+		return stdlib.Nil(), errors.Wrap(err, "")
 	}
 	log.Info().Msg(text)
+	value := ectx.Arg(1)
+	if value.IsT() {
+		texts := strings.Split(text, ".\n")
+		for _, text := range texts {
+			ctx := context.Background()
+			if err := speech(ctx, text); err != nil {
+				return stdlib.Nil(), errors.Wrap(err, "failed speech")
+			}
+		}
+		return stdlib.T(), nil
+	}
 
 	ctx := context.Background()
 	if err := speech(ctx, text); err != nil {
-		return stdlib.Nil(), err
+		return stdlib.Nil(), errors.Wrap(err, "failed speech")
 	}
 
-	return stdlib.Nil(), nil
+	return stdlib.T(), nil
 }
 
 func speech(ctx context.Context, text string) error {
