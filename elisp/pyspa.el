@@ -13,3 +13,9 @@
 (require 's)
 (require 'dash)
 (require 'dash-functional)
+
+(module-load (expand-file-name "libpyspaemacs.so" user-emacs-directory))
+
+(defun pyspa-echo (arg)
+  (interactive "smsg: ")
+  (pyspa/echo arg))
