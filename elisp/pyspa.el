@@ -19,3 +19,9 @@
 (defun pyspa-echo (arg)
   (interactive "smsg: ")
   (pyspa/echo arg))
+
+(defun pyspa-slack-init ()
+  (interactive)
+  (let ((teams (pyspa/slack-init)))
+    (dolist (team teams)
+      (message "connect %s" team))))

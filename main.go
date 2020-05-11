@@ -4,6 +4,7 @@ package main
 import "C"
 
 import (
+	"libpyspaemacs/slack"
 	"libpyspaemacs/speech"
 	"os"
 	"path/filepath"
@@ -54,6 +55,12 @@ func initModule(env emacs.Environment) {
 	env.RegisterFunction("pyspa/echo", echo, 1, "doc", nil)
 	// speech
 	env.RegisterFunction("pyspa/speech", speech.Speech, 2, "doc", nil)
+
+	// slack init
+	env.RegisterFunction("pyspa/slack-init", slack.InitSlack, 0, "doc", nil)
+	// slack post-message
+	env.RegisterFunction("pyspa/slack-post-message", slack.PostMessage, 3, "doc", nil)
+
 	stdlib.Message("loaded pyspa module")
 	env.ProvideFeature("pyspa")
 }

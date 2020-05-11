@@ -1,6 +1,9 @@
 package slack
 
 import (
+	"fmt"
+
+	"github.com/mopemope/emacs-module-go"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -28,7 +31,46 @@ type User struct {
 	name string
 }
 
-func ConnectSlack(tokens ...string) ([]*Team, error) {
+func InitSlack(ctx emacs.FunctionCallContext) (emacs.Value, error) {
+	env := ctx.Environment()
+	stdlib := env.StdLib()
+	tokens := viper.GetStringSlice("slack.tokens")
+
+	teams, err := initSlack(tokens...)
+	if err != nil {
+		return stdlib.Nil(), errors.Wrap(err, "")
+	}
+
+	var items []emacs.Value
+	for _, team := range teams {
+		stdlib.Message(fmt.Sprintf("slack connect team [%s]", team.name))
+		name := env.String(team.name)
+		items = append(items, name)
+	}
+	return stdlib.List(items...), nil
+}
+
+func PostMessage(ctx emacs.FunctionCallContext) (emacs.Value, error) {
+	stdlib := ctx.Environment().StdLib()
+	team, err := ctx.GoStringArg(0)
+	if err != nil {
+		return stdlib.Nil(), errors.Wrap(err, "")
+	}
+	channel, err := ctx.GoStringArg(1)
+	if err != nil {
+		return stdlib.Nil(), errors.Wrap(err, "")
+	}
+	text, err := ctx.GoStringArg(2)
+	if err != nil {
+		return stdlib.Nil(), errors.Wrap(err, "")
+	}
+	if _, err := postMessage(team, channel, text); err != nil {
+		return stdlib.Nil(), errors.Wrap(err, "")
+	}
+	return stdlib.T(), nil
+}
+
+func initSlack(tokens ...string) ([]*Team, error) {
 	var res []*Team
 	for _, token := range tokens {
 		t, err := connectSlack(token)

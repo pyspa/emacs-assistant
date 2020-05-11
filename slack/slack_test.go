@@ -7,7 +7,7 @@ import (
 )
 
 func TestConnectSlack(t *testing.T) {
-	ConnectSlack("")
+	connectSlack("")
 	team := GetTeam("pyspa")
 	team.StartRTM(func(i int, a ...string) {
 		log.Debug().Msgf("%v", a)
