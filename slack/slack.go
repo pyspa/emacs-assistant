@@ -50,6 +50,22 @@ func InitSlack(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	return stdlib.List(items...), nil
 }
 
+func GetChannels(ctx emacs.FunctionCallContext) (emacs.Value, error) {
+	env := ctx.Environment()
+	stdlib := env.StdLib()
+	teamName, err := ctx.GoStringArg(0)
+	if err != nil {
+		return stdlib.Nil(), errors.Wrap(err, "")
+	}
+	team := GetTeam(teamName)
+	var items []emacs.Value
+	for _, c := range team.GetChannels() {
+		name := env.String(c.name)
+		items = append(items, name)
+	}
+	return stdlib.List(items...), nil
+}
+
 func PostMessage(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	stdlib := ctx.Environment().StdLib()
 	team, err := ctx.GoStringArg(0)

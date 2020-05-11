@@ -56,10 +56,14 @@ func initModule(env emacs.Environment) {
 	// speech
 	env.RegisterFunction("pyspa/speech", speech.Speech, 2, "doc", nil)
 
-	// slack init
-	env.RegisterFunction("pyspa/slack-init", slack.InitSlack, 0, "doc", nil)
-	// slack post-message
-	env.RegisterFunction("pyspa/slack-post-message", slack.PostMessage, 3, "doc", nil)
+	{
+		// slack init
+		env.RegisterFunction("pyspa/slack-init", slack.InitSlack, 0, "doc", nil)
+		// slack channels
+		env.RegisterFunction("pyspa/slack-channels", slack.GetChannels, 1, "doc", nil)
+		// slack post-message
+		env.RegisterFunction("pyspa/slack-post-message", slack.PostMessage, 3, "doc", nil)
+	}
 
 	stdlib.Message("loaded pyspa module")
 	env.ProvideFeature("pyspa")
