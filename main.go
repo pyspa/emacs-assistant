@@ -14,6 +14,7 @@ import (
 )
 
 func init() {
+
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 	viper.AutomaticEnv()
 	initLogger()
@@ -22,11 +23,12 @@ func init() {
 
 func initModule(env emacs.Environment) {
 	log.Debug().Msg("initializing ...")
+	stdlib := env.StdLib()
 	// echo
 	env.RegisterFunction("pyspa/echo", echo, 1, "doc", nil)
 	// speech
 	env.RegisterFunction("pyspa/speech", speech.Speech, 2, "doc", nil)
-
+	stdlib.Message("loaded pyspa module")
 	env.ProvideFeature("pyspa")
 }
 
@@ -37,6 +39,7 @@ func echo(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 		return stdlib.Nil(), err
 	}
 	log.Info().Msg(msg)
+	stdlib.Message(msg)
 	return stdlib.Nil(), nil
 }
 
