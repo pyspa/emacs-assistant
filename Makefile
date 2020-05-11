@@ -10,4 +10,4 @@ clean:
 all: libpyspaemacs.so
 
 test: libpyspaemacs.so
-	$(EMACS) --batch --load libpyspaemacs.so --eval '(when (featurep (quote pyspa)) (pyspa/echo "ぁっぉ〜") (pyspa/speech "これは日本語のテストです" t))'
+	$(EMACS) --batch --load libpyspaemacs.so --eval '(when (featurep (quote pyspa)) (pyspa/echo "ぁっぉ〜") )'
