@@ -31,6 +31,12 @@ type User struct {
 	name string
 }
 
+type Message struct {
+	timestamp string
+	user      string
+	text      string
+}
+
 func InitSlack(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	env := ctx.Environment()
 	stdlib := env.StdLib()
@@ -270,6 +276,36 @@ func postMessage(teamName string, channelName string, msg string) (bool, error) 
 		Msg("post message")
 
 	return true, nil
+}
+
+func GetConversationHistory(teamName string, channelName string) ([]*Message, error) {
+	team, ok := teams[teamName]
+	if !ok {
+		log.Debug().Msgf("failed find team %s", teamName)
+		return nil, nil
+	}
+	channel, ok := team.channels[channelName]
+	if !ok {
+		log.Debug().Msgf("failed find channel %s", channelName)
+		return nil, nil
+	}
+	res, err := team.client.GetConversationHistory(&slack.GetConversationHistoryParameters{
+		ChannelID: channel.id,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "")
+	}
+
+	var msgs []*Message
+	for _, m := range res.Messages {
+		msgs = append(msgs, &Message{
+			timestamp: m.Timestamp,
+			user:      team.users[m.User].name,
+			text:      m.Text,
+		})
+	}
+
+	return msgs, nil
 }
 
 func init() {
