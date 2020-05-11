@@ -73,7 +73,7 @@ func PostMessage(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 func initSlack(tokens ...string) ([]*Team, error) {
 	var res []*Team
 	for _, token := range tokens {
-		t, err := connectSlack(token)
+		t, err := connectTeam(token)
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +82,7 @@ func initSlack(tokens ...string) ([]*Team, error) {
 	return res, nil
 }
 
-func connectSlack(token string) (*Team, error) {
+func connectTeam(token string) (*Team, error) {
 	client := slack.New(token)
 	info, err := client.GetTeamInfo()
 	if err != nil {
@@ -99,23 +99,36 @@ func connectSlack(token string) (*Team, error) {
 		users:     map[string]*User{},
 	}
 
-	channels, err := client.GetChannels(true)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed get team channels")
-	}
+	nextCur := ""
+	for {
+		channels, cursor, err := client.GetConversations(&slack.GetConversationsParameters{
+			Types:  []string{"public_channel", "private_channel"},
+			Limit:  1000,
+			Cursor: nextCur,
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "failed get team channels")
+		}
 
-	for _, channel := range channels {
-		if channel.IsMember {
-			c := &Channel{
-				id:       channel.ID,
-				name:     channel.Name,
-				teamName: info.Name,
+		for _, channel := range channels {
+			if channel.IsMember {
+				c := &Channel{
+					id:       channel.ID,
+					name:     channel.Name,
+					teamName: info.Name,
+				}
+				team.channels[channel.Name] = c
+				team.channelID[channel.ID] = c
+				log.Debug().Msgf("find channel %s:%s", channel.Name, channel.ID)
 			}
-			team.channels[channel.Name] = c
-			team.channelID[channel.ID] = c
-			log.Debug().Msgf("find channel %s:%s", channel.Name, channel.ID)
+		}
+		if cursor == "" {
+			break
+		} else {
+			nextCur = cursor
 		}
 	}
+
 	users, err := client.GetUsers()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed get team users")
