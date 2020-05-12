@@ -2,3 +2,5 @@ libpyspaemacs*
 *.org
 *.tmp
 *.temp
+*.token
+*.cache

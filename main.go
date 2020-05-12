@@ -4,6 +4,7 @@ package main
 import "C"
 
 import (
+	"libpyspaemacs/assistant"
 	"libpyspaemacs/slack"
 	"libpyspaemacs/speech"
 	"os"
@@ -57,12 +58,19 @@ func initModule(env emacs.Environment) {
 	env.RegisterFunction("pyspa/speech", speech.Speech, 2, "doc", nil)
 
 	{
+		// slack
+
 		// slack init
 		env.RegisterFunction("pyspa/slack-init", slack.InitSlack, 0, "doc", nil)
 		// slack channels
 		env.RegisterFunction("pyspa/slack-channels", slack.GetChannels, 1, "doc", nil)
 		// slack post-message
 		env.RegisterFunction("pyspa/slack-post-message", slack.PostMessage, 3, "doc", nil)
+	}
+
+	{
+		// assistant
+		env.RegisterFunction("pyspa/assistant-auth", assistant.AuthGCP, 0, "doc", nil)
 	}
 
 	stdlib.Message("loaded pyspa module")
