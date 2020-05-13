@@ -83,18 +83,15 @@ func ask(text string, textOnly bool) (string, error) {
 			SampleRateHertz:  16000,
 			VolumePercentage: 100,
 		},
-		ScreenOutConfig: &embedded.ScreenOutConfig{
-			ScreenMode: embedded.ScreenOutConfig_PLAYING,
-		},
 		DialogStateIn: &embedded.DialogStateIn{
 			LanguageCode:      "ja-JP",
 			ConversationState: nil,
 			IsNewConversation: true,
 		},
 		DeviceConfig: &embedded.DeviceConfig{
-			DeviceId: "device_id",
-			// DeviceModelId: "emacs-e26d1-emasc-csuxkv",
-			DeviceModelId: "device_model_id",
+			DeviceId:      "device_id",
+			DeviceModelId: "emacs-e26d1-emasc-csuxkv",
+			//DeviceModelId: "device_model_id",
 		},
 		Type: &embedded.AssistConfig_TextQuery{
 			TextQuery: text,
@@ -134,7 +131,7 @@ func ask(text string, textOnly bool) (string, error) {
 		defer portaudio.Terminate()
 	}
 
-	displayText := ""
+	responseText := ""
 	for {
 		resp, err := client.Recv()
 		if err == io.EOF {
@@ -147,14 +144,18 @@ func ask(text string, textOnly bool) (string, error) {
 			log.Debug().Msg("END_OF_UTTERANCE")
 		}
 
+		displayText := resp.GetDialogStateOut().GetSupplementalDisplayText()
 		if resp.GetDialogStateOut() != nil {
-			displayText = resp.GetDialogStateOut().GetSupplementalDisplayText()
-			log.Debug().Str("display", displayText).Msg("")
+
+			if responseText == "" {
+				responseText = displayText
+			}
 			if textOnly {
-				if displayText == "" {
-					displayText = "お役に立てそうもありません"
+				if responseText == "" {
+					responseText = "お役に立てそうもありません"
 				}
-				return displayText, nil
+				log.Debug().Str("responseText", responseText).Msg("")
+				return responseText, nil
 			}
 		}
 
@@ -175,8 +176,10 @@ func ask(text string, textOnly bool) (string, error) {
 			}
 		}
 	}
-	if displayText == "" {
-		displayText = "お役に立てそうもありません"
+
+	if responseText == "" {
+		responseText = "お役に立てそうもありません"
 	}
-	return displayText, nil
+	log.Debug().Str("responseText", responseText).Msg("")
+	return responseText, nil
 }
