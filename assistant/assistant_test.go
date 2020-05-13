@@ -23,7 +23,7 @@ func TestAssistant(t *testing.T) {
 		}
 	}
 
-	text, err := ask("8x14は？", false)
+	text, err := ask("今日のニュースは？", false)
 	if err != nil {
 		log.Fatal().Err(err).Msg("")
 	}

@@ -25,3 +25,13 @@
   (let ((teams (pyspa/slack-init)))
     (dolist (team teams)
       (message "connect %s" team))))
+
+(defun pyspa-assistant-ask (arg)
+  (interactive "sask: ")
+  (let ((res (pyspa/assistant-ask arg t)))
+    (message res)))
+
+(defun pyspa-assistant-ask-audio (arg)
+  (interactive "sask: ")
+  (let ((res (pyspa/assistant-ask arg nil)))
+    (message res)))

@@ -71,7 +71,7 @@ func initModule(env emacs.Environment) {
 	{
 		// assistant
 		env.RegisterFunction("pyspa/assistant-auth", assistant.AuthGCP, 0, "doc", nil)
-		env.RegisterFunction("pyspa/assistant-ask", assistant.Ask, 1, "doc", nil)
+		env.RegisterFunction("pyspa/assistant-ask", assistant.Ask, 2, "doc", nil)
 	}
 
 	stdlib.Message("loaded pyspa module")

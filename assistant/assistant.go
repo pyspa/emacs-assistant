@@ -40,7 +40,12 @@ func Ask(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	if err != nil {
 		return stdlib.Nil(), errors.Wrap(err, "")
 	}
-	res, err := ask(text, false)
+	textOnly := false
+	value := ctx.Arg(1)
+	if value.IsT() {
+		textOnly = true
+	}
+	res, err := ask(text, textOnly)
 	if err != nil {
 		return stdlib.Nil(), errors.Wrap(err, "")
 	}
