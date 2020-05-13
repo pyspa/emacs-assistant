@@ -94,9 +94,8 @@ func ask(text string, textOnly bool) (string, error) {
 			IsNewConversation: true,
 		},
 		DeviceConfig: &embedded.DeviceConfig{
-			DeviceId:      "device_id",
-			DeviceModelId: "emacs-e26d1-emasc-csuxkv",
-			//DeviceModelId: "device_model_id",
+			DeviceId:      "my-emacs",
+			DeviceModelId: "emacs",
 		},
 		Type: &embedded.AssistConfig_TextQuery{
 			TextQuery: text,
@@ -148,6 +147,7 @@ func ask(text string, textOnly bool) (string, error) {
 		if resp.EventType == embedded.AssistResponse_END_OF_UTTERANCE {
 			log.Debug().Msg("END_OF_UTTERANCE")
 		}
+		// log.Debug().Msgf("## %+v %+v %+v", resp.GetDebugInfo(), resp.GetDeviceAction(), resp.GetSpeechResults())
 
 		displayText := resp.GetDialogStateOut().GetSupplementalDisplayText()
 		if resp.GetDialogStateOut() != nil {
