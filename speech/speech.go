@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	"google.golang.org/api/option"
 	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
 )
 
@@ -58,8 +59,8 @@ func speech(ctx context.Context, text string) error {
 	if len(spText) > max {
 		text = string(spText[:max])
 	}
-
-	client, err := texttospeech.NewClient(ctx)
+	creds := viper.GetString("speech.credentials")
+	client, err := texttospeech.NewClient(ctx, option.WithCredentialsFile(creds))
 	if err != nil {
 		return errors.Wrap(err, "failed create client")
 	}
