@@ -149,15 +149,11 @@ func ask(text string, textOnly bool) (string, error) {
 
 		if resp.GetDialogStateOut() != nil {
 			displayText = resp.GetDialogStateOut().GetSupplementalDisplayText()
-
-			if displayText == "" {
-				displayText = "お役に立てそうもありません"
-			}
-
-			log.Debug().
-				Str("display", displayText).
-				Msg("")
+			log.Debug().Str("display", displayText).Msg("")
 			if textOnly {
+				if displayText == "" {
+					displayText = "お役に立てそうもありません"
+				}
 				return displayText, nil
 			}
 		}
@@ -178,6 +174,9 @@ func ask(text string, textOnly bool) (string, error) {
 				}
 			}
 		}
+	}
+	if displayText == "" {
+		displayText = "お役に立てそうもありません"
 	}
 	return displayText, nil
 }
