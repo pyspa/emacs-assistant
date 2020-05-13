@@ -33,6 +33,20 @@ func AuthGCP(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	return stdlib.T(), nil
 }
 
+func Ask(ctx emacs.FunctionCallContext) (emacs.Value, error) {
+	env := ctx.Environment()
+	stdlib := env.StdLib()
+	text, err := ctx.GoStringArg(0)
+	if err != nil {
+		return stdlib.Nil(), errors.Wrap(err, "")
+	}
+	res, err := ask(text, false)
+	if err != nil {
+		return stdlib.Nil(), errors.Wrap(err, "")
+	}
+	return env.String(res), nil
+}
+
 func newConn(ctx context.Context) (*grpc.ClientConn, error) {
 
 	tokenSource := gcp.Conf.TokenSource(ctx, oauthToken)
@@ -43,14 +57,14 @@ func newConn(ctx context.Context) (*grpc.ClientConn, error) {
 	)
 }
 
-func Ask(text string) error {
+func ask(text string, textOnly bool) (string, error) {
 	portaudio.Initialize()
 	defer portaudio.Terminate()
 
 	cred := viper.GetString("assistant.credentials")
 	gcp := NewGCPAuthWrapper()
 	if err := gcp.Auth(cred); err != nil {
-		return errors.Wrap(err, "")
+		return "", errors.Wrap(err, "")
 	}
 
 	ctx := context.Background()
@@ -58,7 +72,7 @@ func Ask(text string) error {
 	ctx, _ = context.WithDeadline(ctx, time.Now().Add(runDuration))
 	conn, err := newConn(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to acquire connection")
+		return "", errors.Wrap(err, "failed to acquire connection")
 	}
 	defer conn.Close()
 
@@ -87,15 +101,16 @@ func Ask(text string) error {
 	streamOut, err := portaudio.OpenDefaultStream(0, 1, 16000, len(bufOut), &bufOut)
 	defer func() {
 		if err := streamOut.Close(); err != nil {
+			//
 		}
 	}()
 	if err = streamOut.Start(); err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("")
 	}
 
 	client, err := assistant.Assist(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed assist")
+		return "", errors.Wrap(err, "failed assist")
 	}
 
 	log.Debug().Msgf("Ask: %s", text)
@@ -104,25 +119,35 @@ func Ask(text string) error {
 			Config: config,
 		},
 	}); err != nil {
-		return errors.Wrap(err, "failed send")
+		return "", errors.Wrap(err, "failed send")
 	}
 
+	if !textOnly {
+		portaudio.Initialize()
+		defer portaudio.Terminate()
+	}
+
+	displayText := ""
 	for {
 		resp, err := client.Recv()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			return errors.Wrap(err, "failed recv")
+			return "", errors.Wrap(err, "failed recv")
 		}
 		if resp.EventType == embedded.AssistResponse_END_OF_UTTERANCE {
 			log.Debug().Msg("END_OF_UTTERANCE")
 		}
 
 		if resp.GetDialogStateOut() != nil {
+			displayText = resp.GetDialogStateOut().GetSupplementalDisplayText()
 			log.Debug().
-				Str("display", resp.GetDialogStateOut().GetSupplementalDisplayText()).
+				Str("display", displayText).
 				Msg("")
+			if textOnly {
+				return displayText, nil
+			}
 		}
 
 		audioOut := resp.GetAudioOut()
@@ -142,5 +167,5 @@ func Ask(text string) error {
 			}
 		}
 	}
-	return nil
+	return displayText, nil
 }

@@ -23,7 +23,9 @@ func TestAssistant(t *testing.T) {
 		}
 	}
 
-	if err := Ask("8x14は？"); err != nil {
+	text, err := ask("8x14は？", false)
+	if err != nil {
 		log.Fatal().Err(err).Msg("")
 	}
+	log.Debug().Str("text", text).Msg("")
 }
