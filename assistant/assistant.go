@@ -83,6 +83,9 @@ func ask(text string, textOnly bool) (string, error) {
 			SampleRateHertz:  16000,
 			VolumePercentage: 100,
 		},
+		ScreenOutConfig: &embedded.ScreenOutConfig{
+			ScreenMode: embedded.ScreenOutConfig_PLAYING,
+		},
 		DialogStateIn: &embedded.DialogStateIn{
 			LanguageCode:      "ja-JP",
 			ConversationState: nil,
@@ -101,7 +104,7 @@ func ask(text string, textOnly bool) (string, error) {
 		},
 	}
 
-	bufOut := make([]int16, 799)
+	bufOut := make([]int16, 800)
 	streamOut, err := portaudio.OpenDefaultStream(0, 1, 16000, len(bufOut), &bufOut)
 	defer func() {
 		if err := streamOut.Close(); err != nil {
@@ -148,7 +151,7 @@ func ask(text string, textOnly bool) (string, error) {
 			displayText = resp.GetDialogStateOut().GetSupplementalDisplayText()
 
 			if displayText == "" {
-				displayText = "すみません。このデバイスではサポートされていません"
+				displayText = "お役に立てそうもありません"
 			}
 
 			log.Debug().
