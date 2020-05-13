@@ -89,11 +89,15 @@ func ask(text string, textOnly bool) (string, error) {
 			IsNewConversation: true,
 		},
 		DeviceConfig: &embedded.DeviceConfig{
-			DeviceId:      "device_id",
+			DeviceId: "device_id",
+			// DeviceModelId: "emacs-e26d1-emasc-csuxkv",
 			DeviceModelId: "device_model_id",
 		},
 		Type: &embedded.AssistConfig_TextQuery{
 			TextQuery: text,
+		},
+		DebugConfig: &embedded.DebugConfig{
+			ReturnDebugInfo: true,
 		},
 	}
 
@@ -113,7 +117,7 @@ func ask(text string, textOnly bool) (string, error) {
 		return "", errors.Wrap(err, "failed assist")
 	}
 
-	log.Debug().Msgf("Ask: %s", text)
+	log.Debug().Msgf("ask: %s", text)
 	if err := client.Send(&embedded.AssistRequest{
 		Type: &embedded.AssistRequest_Config{
 			Config: config,
@@ -142,6 +146,11 @@ func ask(text string, textOnly bool) (string, error) {
 
 		if resp.GetDialogStateOut() != nil {
 			displayText = resp.GetDialogStateOut().GetSupplementalDisplayText()
+
+			if displayText == "" {
+				displayText = "すみません。このデバイスではサポートされていません"
+			}
+
 			log.Debug().
 				Str("display", displayText).
 				Msg("")
