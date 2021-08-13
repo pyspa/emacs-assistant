@@ -59,8 +59,8 @@ func speech(ctx context.Context, text string) error {
 	if len(spText) > max {
 		text = string(spText[:max])
 	}
-	creds := viper.GetString("speech.credentials")
-	client, err := texttospeech.NewClient(ctx, option.WithCredentialsFile(creds))
+	cred := viper.GetString("emacs.google.credentials")
+	client, err := texttospeech.NewClient(ctx, option.WithCredentialsFile(cred))
 	if err != nil {
 		return errors.Wrap(err, "failed create client")
 	}
