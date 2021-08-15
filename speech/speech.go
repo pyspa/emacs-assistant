@@ -17,6 +17,8 @@ import (
 	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
 )
 
+const credentials = "emacs.speech.credentials"
+
 var mutex sync.Mutex
 
 func Speech(ectx emacs.FunctionCallContext) (emacs.Value, error) {
@@ -59,7 +61,7 @@ func speech(ctx context.Context, text string) error {
 	if len(spText) > max {
 		text = string(spText[:max])
 	}
-	cred := viper.GetString("emacs.google.credentials")
+	cred := viper.GetString(credentials)
 	client, err := texttospeech.NewClient(ctx, option.WithCredentialsFile(cred))
 	if err != nil {
 		return errors.Wrap(err, "failed create client")

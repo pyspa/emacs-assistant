@@ -18,6 +18,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+const credentials = "emacs.assistant.credentials"
+
 var (
 	conversationState []byte
 )
@@ -25,7 +27,7 @@ var (
 func AuthGCP(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	env := ctx.Environment()
 	stdlib := env.StdLib()
-	cred := viper.GetString("emacs.google.credentials")
+	cred := viper.GetString(credentials)
 	gcp := NewGCPAuthWrapper()
 	if err := gcp.Auth(cred); err != nil {
 		return stdlib.Nil(), errors.Wrap(err, "")
@@ -66,7 +68,7 @@ func ask(text string, textOnly bool) (string, error) {
 	portaudio.Initialize()
 	defer portaudio.Terminate()
 
-	cred := viper.GetString("emacs.google.credentials")
+	cred := viper.GetString(credentials)
 	gcp := NewGCPAuthWrapper()
 	if err := gcp.Auth(cred); err != nil {
 		return "", errors.Wrap(err, "")
