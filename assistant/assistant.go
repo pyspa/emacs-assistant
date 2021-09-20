@@ -137,7 +137,6 @@ func (as *Assistant) ask(text string, textOnly bool) (string, error) {
 	}); err != nil {
 		return "", errors.Wrap(err, "failed send")
 	}
-
 	if !textOnly {
 		portaudio.Initialize()
 		time.Sleep(time.Millisecond * 100)
@@ -156,11 +155,10 @@ func (as *Assistant) ask(text string, textOnly bool) (string, error) {
 		if resp.EventType == embedded.AssistResponse_END_OF_UTTERANCE {
 			log.Debug().Msg("END_OF_UTTERANCE")
 		}
-		// log.Debug().Msgf("## %+v %+v %+v", resp.GetDebugInfo(), resp.GetDeviceAction(), resp.GetSpeechResults())
-
+		//log.Info().Msgf("## %+v %+v %+v", resp.GetDebugInfo(), resp.GetDeviceAction(), resp.GetSpeechResults())
 		displayText := resp.GetDialogStateOut().GetSupplementalDisplayText()
-		if resp.GetDialogStateOut() != nil {
 
+		if resp.GetDialogStateOut() != nil {
 			if responseText == "" {
 				responseText = displayText
 			}
@@ -169,23 +167,25 @@ func (as *Assistant) ask(text string, textOnly bool) (string, error) {
 					responseText = "お役に立てそうもありません"
 				}
 				log.Debug().Str("responseText", responseText).Msg("")
+				log.Info().Str("responseText", responseText).Msg("")
 				return responseText, nil
 			}
 		}
 
-		audioOut := resp.GetAudioOut()
+		if !textOnly {
+			audioOut := resp.GetAudioOut()
+			if audioOut != nil {
+				signal := bytes.NewBuffer(audioOut.GetAudioData())
+				var err error
+				for err == nil {
+					err = binary.Read(signal, binary.LittleEndian, bufOut)
+					if err != nil {
+						break
+					}
 
-		if audioOut != nil {
-			signal := bytes.NewBuffer(audioOut.GetAudioData())
-			var err error
-			for err == nil {
-				err = binary.Read(signal, binary.LittleEndian, bufOut)
-				if err != nil {
-					break
-				}
-
-				if portErr := streamOut.Write(); portErr != nil {
-					log.Error().Err(err).Msg("failed to write to audio out")
+					if portErr := streamOut.Write(); portErr != nil {
+						log.Error().Err(err).Msg("failed to write to audio out")
+					}
 				}
 			}
 		}
@@ -194,6 +194,6 @@ func (as *Assistant) ask(text string, textOnly bool) (string, error) {
 	if responseText == "" {
 		responseText = "お役に立てそうもありません"
 	}
-	log.Debug().Str("responseText", responseText).Msg("")
+	log.Info().Str("responseText", responseText).Msg("")
 	return responseText, nil
 }
