@@ -5,6 +5,7 @@ import "C"
 
 import (
 	"libpyspaemacs/assistant"
+	"libpyspaemacs/config"
 	"libpyspaemacs/slack"
 	"libpyspaemacs/speech"
 	"os"
@@ -51,12 +52,17 @@ func fileExists(filename string) bool {
 
 func initModule(env emacs.Environment) {
 	log.Debug().Msg("initializing ...")
+	cred := viper.GetString(config.GoogleCredentialKey)
+	config := config.NewConfig(cred)
+
 	stdlib := env.StdLib()
 	// echo
 	env.RegisterFunction("pyspa/echo", echo, 1, "doc", nil)
-	// speech
-	env.RegisterFunction("pyspa/speech", speech.Speech, 2, "doc", nil)
-
+	{
+		spk := speech.NewSpeaker(config)
+		// speech
+		env.RegisterFunction("pyspa/speech", spk.Speech, 2, "doc", nil)
+	}
 	{
 		// slack
 
@@ -69,9 +75,9 @@ func initModule(env emacs.Environment) {
 	}
 
 	{
-		// assistant
-		env.RegisterFunction("pyspa/assistant-auth", assistant.AuthGCP, 0, "doc", nil)
-		env.RegisterFunction("pyspa/assistant-ask", assistant.Ask, 2, "doc", nil)
+		as := assistant.NewAssistant(config)
+		env.RegisterFunction("pyspa/assistant-auth", as.AuthGCP, 0, "doc", nil)
+		env.RegisterFunction("pyspa/assistant-ask", as.Ask, 2, "doc", nil)
 	}
 
 	stdlib.Message("loaded pyspa module")

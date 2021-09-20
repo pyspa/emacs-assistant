@@ -5,37 +5,44 @@ import (
 	"context"
 	"encoding/binary"
 	"io"
+	"libpyspaemacs/config"
 	"time"
 
 	"github.com/gordonklaus/portaudio"
 	"github.com/mopemope/emacs-module-go"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
 	embedded "google.golang.org/genproto/googleapis/assistant/embedded/v1alpha2"
 	"google.golang.org/grpc"
 )
 
-const credentials = "emacs.assistant.credentials"
-
 var (
 	conversationState []byte
 )
 
-func AuthGCP(ctx emacs.FunctionCallContext) (emacs.Value, error) {
+type Assistant struct {
+	config *config.Config
+}
+
+func NewAssistant(c *config.Config) *Assistant {
+	return &Assistant{
+		config: c,
+	}
+}
+
+func (as *Assistant) AuthGCP(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	env := ctx.Environment()
 	stdlib := env.StdLib()
-	cred := viper.GetString(credentials)
 	gcp := NewGCPAuthWrapper()
-	if err := gcp.Auth(cred); err != nil {
+	if err := gcp.Auth(as.config.GoogleCredential); err != nil {
 		return stdlib.Nil(), errors.Wrap(err, "")
 	}
 	return stdlib.T(), nil
 }
 
-func Ask(ctx emacs.FunctionCallContext) (emacs.Value, error) {
+func (as *Assistant) Ask(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	env := ctx.Environment()
 	stdlib := env.StdLib()
 	text, err := ctx.GoStringArg(0)
@@ -47,7 +54,7 @@ func Ask(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	if value.IsT() {
 		textOnly = true
 	}
-	res, err := ask(text, textOnly)
+	res, err := as.ask(text, textOnly)
 	if err != nil {
 		return stdlib.Nil(), errors.Wrap(err, "")
 	}
@@ -64,13 +71,12 @@ func newConn(ctx context.Context) (*grpc.ClientConn, error) {
 	)
 }
 
-func ask(text string, textOnly bool) (string, error) {
+func (as *Assistant) ask(text string, textOnly bool) (string, error) {
 	portaudio.Initialize()
 	defer portaudio.Terminate()
 
-	cred := viper.GetString(credentials)
 	gcp := NewGCPAuthWrapper()
-	if err := gcp.Auth(cred); err != nil {
+	if err := gcp.Auth(as.config.GoogleCredential); err != nil {
 		return "", errors.Wrap(err, "")
 	}
 
