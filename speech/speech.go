@@ -69,7 +69,7 @@ func (s *Speaker) speech(ctx context.Context, text string) error {
 	if len(spText) > max {
 		text = string(spText[:max])
 	}
-	cred := s.config.GoogleCredential
+	cred := s.config.Speech.Credential
 	client, err := texttospeech.NewClient(ctx, option.WithCredentialsFile(cred))
 	if err != nil {
 		return errors.Wrap(err, "failed create client")

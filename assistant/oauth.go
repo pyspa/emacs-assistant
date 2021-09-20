@@ -56,7 +56,6 @@ func (w *gcpAuthWrapper) Auth(credPath string) error {
 	if err = json.NewDecoder(f).Decode(&token); err != nil {
 		return errors.Wrap(err, "failed to decode json token")
 	}
-
 	w.Conf = &oauth2.Config{
 		ClientID:     token.Installed.ClientID,
 		ClientSecret: token.Installed.ClientSecret,

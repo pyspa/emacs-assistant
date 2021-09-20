@@ -36,8 +36,8 @@ func (as *Assistant) AuthGCP(ctx emacs.FunctionCallContext) (emacs.Value, error)
 	env := ctx.Environment()
 	stdlib := env.StdLib()
 	gcp := NewGCPAuthWrapper()
-	if err := gcp.Auth(as.config.GoogleCredential); err != nil {
-		return stdlib.Nil(), errors.Wrap(err, "")
+	if err := gcp.Auth(as.config.Assisstant.Credential); err != nil {
+		return stdlib.Nil(), errors.Wrap(err, "failed auth")
 	}
 	return stdlib.T(), nil
 }
@@ -76,7 +76,7 @@ func (as *Assistant) ask(text string, textOnly bool) (string, error) {
 	defer portaudio.Terminate()
 
 	gcp := NewGCPAuthWrapper()
-	if err := gcp.Auth(as.config.GoogleCredential); err != nil {
+	if err := gcp.Auth(as.config.Assisstant.Credential); err != nil {
 		return "", errors.Wrap(err, "")
 	}
 
@@ -113,7 +113,7 @@ func (as *Assistant) ask(text string, textOnly bool) (string, error) {
 		},
 	}
 
-	bufOut := make([]int16, 800)
+	bufOut := make([]int16, 400)
 	streamOut, err := portaudio.OpenDefaultStream(0, 1, 16000, len(bufOut), &bufOut)
 	defer func() {
 		if err := streamOut.Close(); err != nil {
@@ -140,6 +140,7 @@ func (as *Assistant) ask(text string, textOnly bool) (string, error) {
 
 	if !textOnly {
 		portaudio.Initialize()
+		time.Sleep(time.Millisecond * 100)
 		defer portaudio.Terminate()
 	}
 

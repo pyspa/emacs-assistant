@@ -52,8 +52,7 @@ func fileExists(filename string) bool {
 
 func initModule(env emacs.Environment) {
 	log.Debug().Msg("initializing ...")
-	cred := viper.GetString(config.GoogleCredentialKey)
-	config := config.NewConfig(cred)
+	config := config.NewConfig()
 
 	stdlib := env.StdLib()
 	// echo

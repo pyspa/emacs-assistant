@@ -2,14 +2,20 @@ package config
 
 import "github.com/spf13/viper"
 
-const GoogleCredentialKey = "emacs.google.credentials"
+const SpeechCredentialKey = "emacs.speech.credentials"
+const AssistantCredentialKey = "emacs.assistant.credentials"
 
 type Config struct {
-	GoogleCredential string
-	Speech           SpeechConfig
+	Assisstant AssisstantConfig
+	Speech     SpeechConfig
+}
+
+type AssisstantConfig struct {
+	Credential string
 }
 
 type SpeechConfig struct {
+	Credential   string
 	Lang         string
 	SpeakingRate float64
 	Pitch        float64
@@ -17,16 +23,26 @@ type SpeechConfig struct {
 	PlayCommand  []string
 }
 
-func NewConfig(gcred string) *Config {
+func NewConfig() *Config {
+	ac := NewAssistantConfigFromEnv()
 	sc := NewSpeechConfigFromEnv()
 	return &Config{
-		GoogleCredential: gcred,
-		Speech:           sc,
+		Assisstant: ac,
+		Speech:     sc,
 	}
+}
+
+func NewAssistantConfigFromEnv() AssisstantConfig {
+	ac := AssisstantConfig{}
+	cred := viper.GetString(AssistantCredentialKey)
+	ac.Credential = cred
+	return ac
 }
 
 func NewSpeechConfigFromEnv() SpeechConfig {
 	sc := SpeechConfig{}
+	cred := viper.GetString(SpeechCredentialKey)
+	sc.Credential = cred
 	sc.Lang = viper.GetString("speech.lang")
 	sc.SpeakingRate = viper.GetFloat64("speech.speaking_rate")
 	sc.Pitch = viper.GetFloat64("speech.pitch")
