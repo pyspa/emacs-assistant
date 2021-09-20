@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -109,7 +110,8 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func hasCachedOauth() bool {
-	if _, err := os.Stat(oauthTokenFilename); os.IsNotExist(err) {
+	d, _ := os.UserCacheDir()
+	if _, err := os.Stat(filepath.Join(d, oauthTokenFilename)); os.IsNotExist(err) {
 		return false
 	}
 	return true
@@ -124,7 +126,8 @@ func setTokenSource(permissionCode string) {
 		log.Fatal().Err(err).Msg("failed to retrieve the oauth2 token")
 	}
 	//fmt.Println(oauthToken)
-	of, err := os.Create(oauthTokenFilename)
+	d, _ := os.UserCacheDir()
+	of, err := os.Create(filepath.Join(d, oauthTokenFilename))
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to retrieve the oauth2 token")
 	}
@@ -143,7 +146,8 @@ func setTokenSource(permissionCode string) {
 // }
 
 func loadTokenSource() error {
-	f, err := os.Open(oauthTokenFilename)
+	d, _ := os.UserCacheDir()
+	f, err := os.Open(filepath.Join(d, oauthTokenFilename))
 	if err != nil {
 		return errors.Wrap(err, "failed to load the token source (deleted from disk)")
 	}
