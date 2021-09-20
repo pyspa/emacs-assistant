@@ -51,7 +51,7 @@ func (as *Assistant) Ask(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	}
 	textOnly := false
 	value := ctx.Arg(1)
-	if value.IsT() {
+	if env.GoBool(value) {
 		textOnly = true
 	}
 	res, err := as.ask(text, textOnly)
