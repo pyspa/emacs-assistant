@@ -5,6 +5,7 @@ import "C"
 
 import (
 	"libpyspaemacs/assistant"
+	"libpyspaemacs/calendar"
 	"libpyspaemacs/config"
 	"libpyspaemacs/slack"
 	"libpyspaemacs/speech"
@@ -74,9 +75,17 @@ func initModule(env emacs.Environment) {
 	}
 
 	{
+		// assisstant
 		as := assistant.NewAssistant(config)
 		env.RegisterFunction("pyspa/assistant-auth", as.AuthGCP, 0, "doc", nil)
 		env.RegisterFunction("pyspa/assistant-ask", as.Ask, 2, "doc", nil)
+	}
+
+	{
+		// calendar
+		cal := calendar.NewCalendar(config)
+		env.RegisterFunction("pyspa/auth-calendar", cal.Auth, 0, "doc", nil)
+		env.RegisterFunction("pyspa/retrieve-schedules", cal.RetrieveSchedules, 1, "doc", nil)
 	}
 
 	stdlib.Message("loaded pyspa module")

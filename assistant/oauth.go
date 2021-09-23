@@ -20,7 +20,7 @@ var (
 	gcp                *gcpAuthWrapper
 	oauthSrv           *http.Server
 	oauthRedirectURL   = "http://localhost:8080"
-	oauthTokenFilename = "oauthToken.cache"
+	oauthTokenFilename = "assisstant.oauthToken.cache"
 )
 
 type JSONToken struct {

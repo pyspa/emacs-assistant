@@ -2,12 +2,16 @@ package config
 
 import "github.com/spf13/viper"
 
-const SpeechCredentialKey = "emacs.speech.credentials"
-const AssistantCredentialKey = "emacs.assistant.credentials"
+const (
+	SpeechCredentialKey    = "emacs.speech.credentials"
+	AssistantCredentialKey = "emacs.assistant.credentials"
+	CalendarCredentialKey  = "emacs.calendar.credentials"
+)
 
 type Config struct {
 	Assisstant AssisstantConfig
 	Speech     SpeechConfig
+	Calendar   CalendarConfig
 }
 
 type AssisstantConfig struct {
@@ -23,12 +27,18 @@ type SpeechConfig struct {
 	PlayCommand  []string
 }
 
+type CalendarConfig struct {
+	Credential string
+}
+
 func NewConfig() *Config {
 	ac := NewAssistantConfigFromEnv()
 	sc := NewSpeechConfigFromEnv()
+	cc := NewCalendarConfigFromEnv()
 	return &Config{
 		Assisstant: ac,
 		Speech:     sc,
+		Calendar:   cc,
 	}
 }
 
@@ -49,6 +59,13 @@ func NewSpeechConfigFromEnv() SpeechConfig {
 	sc.TextMax = viper.GetInt("speech.text_max")
 	sc.PlayCommand = viper.GetStringSlice("speech.play_cmd")
 	return sc
+}
+
+func NewCalendarConfigFromEnv() CalendarConfig {
+	c := CalendarConfig{}
+	cred := viper.GetString(CalendarCredentialKey)
+	c.Credential = cred
+	return c
 }
 
 func init() {
