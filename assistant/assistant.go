@@ -32,7 +32,7 @@ func NewAssistant(c *config.Config) *Assistant {
 	}
 }
 
-func (as *Assistant) AuthGCP(ctx emacs.FunctionCallContext) (emacs.Value, error) {
+func (as *Assistant) Auth(ctx emacs.FunctionCallContext) (emacs.Value, error) {
 	env := ctx.Environment()
 	stdlib := env.StdLib()
 	gcp := NewGCPAuthWrapper()

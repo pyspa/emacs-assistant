@@ -77,8 +77,8 @@ func initModule(env emacs.Environment) {
 	{
 		// assisstant
 		as := assistant.NewAssistant(config)
-		env.RegisterFunction("pyspa/assistant-auth", as.AuthGCP, 0, "doc", nil)
-		env.RegisterFunction("pyspa/assistant-ask", as.Ask, 2, "doc", nil)
+		env.RegisterFunction("pyspa/auth-assistant", as.Auth, 0, "doc", nil)
+		env.RegisterFunction("pyspa/ask-assistant", as.Ask, 2, "doc", nil)
 	}
 
 	{
