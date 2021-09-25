@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"libpyspaemacs/config"
+	"strings"
 	"time"
 
 	"github.com/mopemope/emacs-module-go"
@@ -71,6 +72,10 @@ func (c *Calendar) RetrieveSchedules(ectx emacs.FunctionCallContext) (emacs.Valu
 		if err != nil {
 			return stdlib.Nil(), errors.Wrap(err, "failed convert string")
 		}
+		if cal == "" {
+			// next
+			continue
+		}
 		events, err := srv.Events.List(cal).ShowDeleted(false).
 			SingleEvents(true).TimeMin(minTime).TimeMax(maxTime).MaxResults(int64(maxResults)).OrderBy("startTime").Do()
 		if err != nil {
@@ -83,15 +88,17 @@ func (c *Calendar) RetrieveSchedules(ectx emacs.FunctionCallContext) (emacs.Valu
 			if date == "" {
 				date = item.Start.Date
 			}
+
 			var sch []emacs.Value
 
+			sch = append(sch, env.String(item.Id))
 			sch = append(sch, env.String(item.Summary))
-			sch = append(sch, env.String(date))
+			sch = append(sch, env.String(fmt.Sprintf("<%s>", strings.Replace(date, "T", " ", 1))))
 			if item.ConferenceData != nil {
 				meet := fmt.Sprintf("https://meet.google.com/%s", item.ConferenceData.ConferenceId)
 				sch = append(sch, env.String(meet))
 			}
-			// spew.Dump(sch)
+			//spew.Dump(sch)
 			list := stdlib.List(sch...)
 
 			res = append(res, list)
