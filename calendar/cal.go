@@ -82,7 +82,6 @@ func (c *Calendar) RetrieveSchedules(ectx emacs.FunctionCallContext) (emacs.Valu
 			return stdlib.Nil(), errors.Wrap(err, "unable to retrieve next user's events")
 		}
 
-		var res []emacs.Value
 		for _, item := range events.Items {
 			date := item.Start.DateTime
 			if date == "" {
@@ -98,13 +97,10 @@ func (c *Calendar) RetrieveSchedules(ectx emacs.FunctionCallContext) (emacs.Valu
 				meet := fmt.Sprintf("https://meet.google.com/%s", item.ConferenceData.ConferenceId)
 				sch = append(sch, env.String(meet))
 			}
-			//spew.Dump(sch)
 			list := stdlib.List(sch...)
-
 			res = append(res, list)
 		}
 	}
-
 	return stdlib.List(res...), nil
 }
 
