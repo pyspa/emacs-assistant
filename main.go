@@ -85,7 +85,7 @@ func initModule(env emacs.Environment) {
 		// calendar
 		cal := calendar.NewCalendar(config)
 		env.RegisterFunction("pyspa/auth-calendar", cal.Auth, 0, "doc", nil)
-		env.RegisterFunction("pyspa/retrieve-schedules", cal.RetrieveSchedules, 1, "doc", nil)
+		env.RegisterFunction("pyspa/retrieve-schedules", cal.RetrieveSchedules, 2, "doc", nil)
 	}
 
 	stdlib.Message("loaded pyspa module")

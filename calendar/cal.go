@@ -14,8 +14,7 @@ import (
 )
 
 var (
-	maxResults               = 50
-	period     time.Duration = 2
+	maxResults = 50
 )
 
 type Calendar struct {
@@ -47,6 +46,8 @@ func (c *Calendar) RetrieveSchedules(ectx emacs.FunctionCallContext) (emacs.Valu
 		return stdlib.Nil(), errors.Wrap(err, "failed parse calendars")
 	}
 	calendars = append(calendars, env.String("primary"))
+
+	days := env.GoInt(ectx.Arg(1))
 	gcp := NewGCPAuthWrapper()
 	tok, err := gcp.Auth(c.config.Assisstant.Credential)
 	if err != nil {
@@ -60,7 +61,7 @@ func (c *Calendar) RetrieveSchedules(ectx emacs.FunctionCallContext) (emacs.Valu
 	if err != nil {
 		return stdlib.Nil(), errors.Wrap(err, "failed init service")
 	}
-
+	period := time.Duration(days)
 	now := time.Now().UTC()
 	minTime := now.Format(time.RFC3339)
 	maxTime := now.Add(24 * time.Hour * period).Format(time.RFC3339)
